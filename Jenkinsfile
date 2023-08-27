@@ -15,16 +15,24 @@ pipeline{
         sh "mv target/*war /target/myweb.war"
       }
     }
-    stage("tomcat"){
-        steps{
+stage("tomcat") {
+    steps {
+        script {
             sshagent(['tomcat']) {
-              sh """
-               sh ssh -o StrictHostKeyChecking=no /target/myweb.war root@172.31.41.28:/opt/apache-tomcat-9.0.80/webapps/
-               ssh root@172.31.41.28 /opt/apache-tomcat-9.0.80/bin/shutdown.sh
-               ssh root@172.31.41.28 /opt/apache-tomcat-9.0.80/bin/startup.sh
-              """
-           }
+                // Copy the WAR file to the remote Tomcat webapps directory
+                sh "scp -o StrictHostKeyChecking=no /target/myweb.war root@172.31.41.28:/opt/apache-tomcat-9.0.80/webapps/"
+
+                // Remote commands to shutdown and startup Tomcat
+                sh "ssh root@172.31.41.28 '/opt/apache-tomcat-9.0.80/bin/shutdown.sh'"
+                sh "ssh root@172.31.41.28 '/opt/apache-tomcat-9.0.80/bin/startup.sh'"
+            }
         }
     }
-  }
 }
+
+
+
+
+
+
+
